@@ -1,0 +1,23 @@
+{
+  "name": "hardhat-project",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.7",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.5"
+  },
+  "scripts": {
+    "commit": "git-cz",
+    "coverage": "npx hardhat coverage --testfiles 'test/*.js' ",
+    "server": "npx hardhat node",
+    "clean": "npx hardhat clean",
+    "compile": "npx hardhat compile",
+    "run": "npx hardhat run --network hardhat scripts/run.js",
+    "test": "hardhat test --network hardhat",
+    "test:localhost": "hardhat test --network localhost",
+    "test:sepolia": "hardhat test --network sepolia",
+    "test:hardhat": "npx hardhat test --network hardhat",
+    "deploy:localhost": "npx hardhat run --network localhost scripts/deploy.ts",
+    "deploy:assetchain_test": "npx hardhat run --network assetchain_test scripts/multiSigWalletFactoryDeploy.ts",
+    "deploy:sepolia": "npx hardhat run --network sepolia scripts/multiSigWalletFactoryDeploy.ts" 
+  }
+}
