@@ -2,99 +2,68 @@ import { useEffect, useState } from "react";
 import MultiSigWallet from "../utils/MultiSigWallet.js";
 import { useAccount } from "../context/UserContext.js";
 import { useFormik } from "formik";
+import { Link } from "react-router-dom";
 
 const SideBar = () => {
-  // const account = useAccount();
-  // const [approvers, setApprovers] = useState([]);
-  // const [isLoading, setisLoading] = useState(false);
+  const account = useAccount();
+  const [walletAddress, setWalletAddress] = useState<string>();
+  const [isOpen, setIsOpen] = useState(false);
 
-  // const fetchApprovers = async () => {
-  //   try {
-  //     if (!account?.provider || !account?.address) {
-  //       return;
-  //     }
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
-  //     const approvers = await new MultiSigWallet(
-  //       account?.provider,
-  //       account?.address
-  //     ).getApprovers();
+  useEffect(() => {
+    getMultiSigWallet();
+  }, []);
 
-  //     setApprovers(approvers);
-  //   } catch (error) {
-  //     console.log({ error });
-  //   }
-  // };
-
-  // const formik = useFormik({
-  //   initialValues: {
-  //     to: "",
-  //     amount: "",
-  //   },
-  //   onSubmit: async (values) => {
-  //     await new MultiSigWallet(
-  //       account?.provider,
-  //       account?.address
-  //     ).createTransfer(String(values.amount), values.to);
-
-  //     setisLoading(false);
-  //     fetchTransfers();
-  //   },
-  // });
-
-  // useEffect(() => {
-  //   fetchApprovers();
-  // }, [account?.provider, account?.address]);
+  function getMultiSigWallet() {
+    const walletAddress = location.pathname.split("/").pop();
+    if (!walletAddress) return;
+    setWalletAddress(walletAddress);
+  }
 
   return (
-    <div className="flex flex-col gap-7 w-1/6 h-screen bg-blue-100 px-3 py-4">
-      <div className="flex flex-col w-full text-center">
-        <h2 className="font-black">MultiSig Wallet</h2>
-        <p className="text-xs italic">...for Asset Chain</p>
-      </div>
-      <div className="flex flex-col w-full bg-blue-50 px-3 py-4 pb-10">
-        <h4 className="text-sm font-bold">Transfer Funds {">>"}</h4>
-        <h4 className="text-sm font-bold">Transactions {">>"}</h4>
-
-        {/* <div className="flex flex-col w-full mt-6">
-          <input
-            type="number"
-            name="amount"
-            value={formik.values.amount}
-            onChange={formik.handleChange}
-            placeholder="Amount"
-            className="h-full w-full mt-3 rounded-sm bg-white bg-opacity-30 px-3 py-1 text-sm text-black outline outline-1 outline-offset-2 focus:border-none focus:outline-none"
-          />
-          <input
-            type="text"
-            name="to"
-            value={formik.values.to}
-            onChange={formik.handleChange}
-            placeholder="To"
-            className="h-full w-full mt-3 rounded-sm bg-white bg-opacity-30 px-3 py-1 text-sm text-black outline outline-1 outline-offset-2 focus:border-none focus:outline-none"
-          />
-          <button
-            onClick={() => formik.handleSubmit()}
-            className="text-nowrap rounded-lg mt-6 w-full py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
+    <div>
+      {/* Hamburger Icon */}
+      <div className="md:hidden p-4">
+        <button onClick={toggleSidebar}>
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            {isLoading ? "processing..." : "Send"}
-          </button>
-        </div> */}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+        </button>
       </div>
-      {/* <div className="flex flex-col w-full bg-blue-50 px-3 py-4 pb-10">
-        <h4 className="text-sm font-bold">Approvers {">>"}</h4>
 
-        <div className="flex flex-col w-full mt-6 ">
-          {approvers.length > 0 &&
-            approvers.map((e, i) => (
-              <div
-                key={i}
-                className="flex flex-col w-full overflow-auto mt-3 rounded-sm px-3 py-1 text-xs text-black border-b break-words break-all"
-              >
-                {e}
-              </div>
-            ))}
+      {/* Sidebar */}
+      <div className={`flex flex-col gap-7 w-1/6 h-screen bg-blue-100 px-3 py-4 md:block ${isOpen ? 'block' : 'hidden'}`}>
+        <div className="flex flex-col w-full text-center">
+          <h2 className="font-black">MultiSig Wallet</h2>
+          <p className="text-xs italic">...for Asset Chain</p>
         </div>
-      </div> */}
+        <div className="flex flex-col w-full bg-blue-50 px-3 py-4 pb-10">
+          {account && walletAddress && (
+            <>
+              <Link to={`/wallet/transfers/${walletAddress}`}>
+                <h4 className="text-sm font-bold">Transfer Funds {">>"}</h4>
+              </Link>
+              <Link to={`/wallet/transactions/${walletAddress}`}>
+                <h4 className="text-sm font-bold">Transactions {">>"}</h4>
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

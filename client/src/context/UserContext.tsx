@@ -6,11 +6,10 @@ import {
   useState,
 } from "react";
 import { autoConnectWallet, getAddress, loadProvider } from "../utils/script";
-import { ethers } from "ethers";
 
 // Define the shape of the context state
 interface AccountContextState {
-  provider: ethers.Provider | null;
+  provider: any;
   address: string | null;
   updateAddress: (address: string) => void;
 }
@@ -37,17 +36,28 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 
   let account = { provider, address };
 
+
+
   const fetchData = async () => {
     const provider = await loadProvider();
     const address = await autoConnectWallet();
 
     setProvider(provider);
     setAddress(address ? address : null);
+
   };
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      setAddress(accounts[0]);
+    });
+  }, []);
+
+  
 
   return (
     <AccountContext.Provider
