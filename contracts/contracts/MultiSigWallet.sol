@@ -29,8 +29,7 @@ contract MultiSigWallet {
     Transfer[] public transfers;
     mapping(uint => Transaction) transactions;
 
-    uint transactionCount = 1;
-    uint batchCount = 1;
+    uint public transactionCount = 1;
 
     // Transfer approval mapping
     mapping(address => mapping(uint => bool)) public approvals;

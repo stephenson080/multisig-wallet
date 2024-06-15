@@ -16,8 +16,11 @@
     "test:localhost": "hardhat test --network localhost",
     "test:sepolia": "hardhat test --network sepolia",
     "test:hardhat": "npx hardhat test --network hardhat",
-    "deploy:localhost": "npx hardhat run --network localhost scripts/deploy.ts",
+    "deploy:localhost": "npx hardhat run --network localhost scripts/multiSigWalletFactoryDeploy.ts",
     "deploy:assetchain_test": "npx hardhat run --network assetchain_test scripts/multiSigWalletFactoryDeploy.ts",
-    "deploy:sepolia": "npx hardhat run --network sepolia scripts/multiSigWalletFactoryDeploy.ts" 
+    "deploy:sepolia": "npx hardhat run --network sepolia scripts/multiSigWalletFactoryDeploy.ts",
+    "deploy:sample:localhost": "npx hardhat run --network localhost scripts/externalContractDeploy.ts",
+    "deploy:sample:assetchain_test": "npx hardhat run --network assetchain_test scripts/externalContractDeploy.ts",
+    "deploy:sample:sepolia": "npx hardhat run --network sepolia scripts/externalContractDeploy.ts"
   }
 }
