@@ -46,19 +46,27 @@ const SideBar = () => {
       </div>
 
       {/* Sidebar */}
-      <div className={`flex flex-col gap-7 w-1/6 h-screen bg-blue-100 px-3 py-4 md:block ${isOpen ? 'block' : 'hidden'}`}>
-        <div className="flex flex-col w-full text-center">
+      <div
+        className={`flex flex-col gap-7 w-full h-screen bg-blue-100 md:block ${
+          isOpen ? "block" : "hidden"
+        }`}
+      >
+        <div className="flex flex-col w-full text-center px-3 py-4">
           <h2 className="font-black">MultiSig Wallet</h2>
           <p className="text-xs italic">...for Asset Chain</p>
         </div>
-        <div className="flex flex-col w-full bg-blue-50 px-3 py-4 pb-10">
+        <div className="flex flex-col w-full px-3 py-4 pb-10">
+          {/* Kept padding here */}
           {account && walletAddress && (
             <>
+              <Link to={`/wallet`}>
+                <h4 className="text-sm font-bold my-2">Wallet {">>"}</h4>
+              </Link>
               <Link to={`/wallet/transfers/${walletAddress}`}>
-                <h4 className="text-sm font-bold">Transfer Funds {">>"}</h4>
+                <h4 className="text-sm font-bold my-2">Transfer Funds {">>"}</h4>
               </Link>
               <Link to={`/wallet/transactions/${walletAddress}`}>
-                <h4 className="text-sm font-bold">Transactions {">>"}</h4>
+                <h4 className="text-sm font-bold my-2">Transactions {">>"}</h4>
               </Link>
             </>
           )}

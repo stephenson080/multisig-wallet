@@ -10,6 +10,7 @@ import { Modal } from "../components/Modal";
 import { useFormik } from "formik";
 import { showToast } from "../utils/toaster";
 import { Link, Outlet } from "react-router-dom";
+import { NoWalletConnected } from "../components/NoWalletConnected";
 
 export function Home() {
   const account = useAccount();
@@ -167,7 +168,7 @@ export function Home() {
             </button>
           </div>
         </Modal>
-        {account ? (
+        {account && account.address ? (
           <div className="flex flex-col w-full">
             <div className="flex flex-row-reverse px-5 w-full my-3">
               <button
@@ -243,7 +244,7 @@ export function Home() {
             </div>
           </div>
         ) : (
-          <p>Connect Wallet</p>
+          <NoWalletConnected />
         )}
       </div>
     </Layout>

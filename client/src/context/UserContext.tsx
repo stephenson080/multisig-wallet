@@ -53,6 +53,7 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 
   useEffect(() => {
     window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      localStorage.setItem('connectedAccount', accounts[0]);
       setAddress(accounts[0]);
     });
   }, []);
