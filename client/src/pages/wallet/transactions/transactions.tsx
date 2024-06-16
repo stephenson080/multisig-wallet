@@ -10,6 +10,7 @@ import { ethers } from "ethers";
 import { abiToFunction, truncateAddress } from "../../../utils/helpers";
 import { AbiInput } from "../../../utils/type";
 import { SAMPLEABI, SAMPLE_CONTRACT_ADDRESS } from "../../../utils/constants";
+import { NoWalletConnected } from "../../../components/NoWalletConnected";
 
 interface FormState {
   selectedFunction: AbiInput | null;
@@ -179,7 +180,7 @@ export function WalletTransactions() {
       if (!account) return;
       if (!wallet) return;
       if (!account.provider || !account.address) return;
-      setUiState({...uiState, loading: true})
+      setUiState({ ...uiState, loading: true });
       const inputs = [];
       for (let inp of formState.selectedFunction.inputs) {
         let value = formState.inputValues[inp.name];
@@ -208,12 +209,12 @@ export function WalletTransactions() {
         wallet.address,
         account.address
       );
-      setUiState({...uiState, loading: false})
-      showToast('Transaction Added!', "success");
-      _getWallet()
+      setUiState({ ...uiState, loading: false });
+      showToast("Transaction Added!", "success");
+      _getWallet();
     } catch (error: any) {
       showToast(error.message, "failed");
-      setUiState({...uiState, loading: false})
+      setUiState({ ...uiState, loading: false });
     }
   }
 
@@ -311,19 +312,8 @@ export function WalletTransactions() {
         </Modal>
         {account ? (
           <div className="flex flex-col w-full">
-            <div className="flex flex-row px-5 w-full my-3 justify-between bg-white items-center">
-              <h4 className="font-black">Transactions</h4>
-            </div>
             <div className="flex flex-row px-5 w-full my-3 justify-between items-center">
-              {wallet && (
-                <div>
-                  <h2>{wallet.name}</h2>
-                  <p className="text-gray-400">Bal: {wallet.balance} RWA</p>
-                  <p className="text-gray-400">
-                    {wallet.approvals.length} Approvals
-                  </p>
-                </div>
-              )}
+              <h4 className="font-black">Transactions</h4>
               <button
                 onClick={manageModal}
                 className="float-right text-nowrap rounded-lg px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
@@ -369,9 +359,7 @@ export function WalletTransactions() {
                         >
                           {Number(e.id) + 1}
                         </td>
-                        <td className="px-6 py-4">
-                          {truncateAddress(e.data)}
-                        </td>
+                        <td className="px-6 py-4">{truncateAddress(e.data)}</td>
                         <td className="px-6 py-4">{truncateAddress(e.to)}</td>
                         <td className="px-6 py-4">{e.approvals}</td>
                         <td className="px-6 py-4">
@@ -393,7 +381,7 @@ export function WalletTransactions() {
             </div>
           </div>
         ) : (
-          <p>Connect Wallet</p>
+          <NoWalletConnected />
         )}
       </div>
     </Layout>

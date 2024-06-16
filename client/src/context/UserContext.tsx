@@ -6,12 +6,15 @@ import {
   useState,
 } from "react";
 import { autoConnectWallet, getAddress, loadProvider } from "../utils/script";
+import { WalletDetails } from "../utils/type";
 
 // Define the shape of the context state
 interface AccountContextState {
+  wallet: WalletDetails |null
   provider: any;
   address: string | null;
   updateAddress: (address: string) => void;
+  updateWallet: (wallet: WalletDetails) => void;
 }
 
 // Define the props for the provider component
@@ -21,9 +24,13 @@ interface AccountProviderProps {
 
 // set default state of the context state
 export const AccountContext = createContext<AccountContextState>({
+  wallet: null,
   address: null,
   provider: null,
   updateAddress: (_a: string) => {},
+  updateWallet(wallet) {
+      
+  }
 });
 
 // The UserProvider component that wraps its children components in a UserContext Provider,
@@ -33,8 +40,9 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 }) => {
   const [provider, setProvider] = useState(null);
   const [address, setAddress] = useState<string | null>(null);
+  const [wallet, setWallet] = useState<WalletDetails | null>(null);
 
-  let account = { provider, address };
+  let account = { provider, address, wallet };
 
 
 
@@ -66,6 +74,9 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
         ...account,
         updateAddress(address) {
           setAddress(address);
+        },
+        updateWallet(wallet) {
+            setWallet(wallet)
         },
       }}
     >

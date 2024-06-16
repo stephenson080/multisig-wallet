@@ -10,6 +10,8 @@ import { Modal } from "../components/Modal";
 import { useFormik } from "formik";
 import { showToast } from "../utils/toaster";
 import { Link, Outlet } from "react-router-dom";
+import { NoWalletConnected } from "../components/NoWalletConnected";
+import { Empty } from "../components/Empty";
 
 export function Home() {
   const account = useAccount();
@@ -19,6 +21,7 @@ export function Home() {
   });
   const [walletDetails, setWalletDetails] = useState<WalletDetails[]>([]);
   useEffect(() => {
+    console.log(account?.address);
     _getWallets();
   }, [account?.address, account?.provider]);
 
@@ -31,18 +34,21 @@ export function Home() {
         account.address,
         account.provider
       );
-      if (wallets.length > 0) {
-        const _walletDetails = [];
-        for (let wallet of wallets) {
-          try {
-            const detail = await getWalletDetails(wallet);
-            _walletDetails.push(detail);
-          } catch (error) {
-            throw error;
-          }
+
+      const _walletDetails: WalletDetails[] = [];
+      for (let wallet of wallets) {
+        try {
+          const detail = await getWalletDetails(wallet);
+          const exist = _walletDetails.find(
+            (w) => w.address === detail.address
+          );
+          if (exist) continue;
+          _walletDetails.push(detail);
+        } catch (error) {
+          throw error;
         }
-        setWalletDetails([..._walletDetails]);
       }
+      setWalletDetails([..._walletDetails]);
     } catch (error) {
       console.log(error);
     }
@@ -179,32 +185,32 @@ export function Home() {
             </div>
 
             <div className="flex flex-col w-full overflow-y-auto px-5 py-5">
-              <table className="w-full text-left text-sm text-slate-500  rtl:text-right">
-                <thead className="bg-blue-50 text-xs uppercase ">
-                  <tr>
-                    <th scope="col" className="px-6 py-3">
-                      ID
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Address
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Name
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Approvals
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Wallet balance
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {walletDetails.length > 0 ? (
-                    walletDetails.map((w, i) => {
+              {walletDetails.length > 0 ? (
+                <table className="w-full text-left text-sm text-slate-500  rtl:text-right">
+                  <thead className="bg-blue-50 text-xs uppercase ">
+                    <tr>
+                      <th scope="col" className="px-6 py-3">
+                        ID
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Address
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Name
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Approvals
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Wallet balance
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {walletDetails.map((w, i) => {
                       const approvals = w.approvals.map((a) =>
                         truncateAddress(a)
                       );
@@ -235,12 +241,14 @@ export function Home() {
                           </td>
                         </tr>
                       );
-                    })
-                  ) : (
-                    <p>No Wallet</p>
-                  )}
-                </tbody>
-              </table>
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <Empty>
+                  <p>No Wallet</p>
+                </Empty>
+              )}
             </div>
           </div>
         ) : (

@@ -14,13 +14,26 @@ const Header = () => {
     }
   };
 
-  function disconnectWallet(){
-    account?.updateAddress('')
-    localStorage.removeItem('connectedAccount')
-    location.replace('/')
+  function disconnectWallet() {
+    account?.updateAddress("");
+    localStorage.removeItem("connectedAccount");
+    location.replace("/");
   }
   return (
-    <div className="flex py-3 justify-end px-5 bg-blue-50">
+    <div
+      className={`flex py-3 items-center ${
+        account?.wallet ? "justify-between" : "justify-end"
+      } px-5 bg-blue-50`}
+    >
+      {account && account.wallet && (
+        <div>
+          <h2>{account.wallet.name}</h2>
+          <p className="text-gray-400">Bal: {account.wallet.balance} RWA</p>
+          <p className="text-gray-400">
+            {account.wallet.approvals.length} Wallet Approvals
+          </p>
+        </div>
+      )}
       {account && account.address ? (
         <div className="flex flex-row items-center">
           <p className="text-sm font-bold capitalize mx-1">
