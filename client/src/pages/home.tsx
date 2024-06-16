@@ -10,7 +10,6 @@ import { Modal } from "../components/Modal";
 import { useFormik } from "formik";
 import { showToast } from "../utils/toaster";
 import { Link, Outlet } from "react-router-dom";
-import { NoWalletConnected } from "../components/NoWalletConnected";
 
 export function Home() {
   const account = useAccount();
@@ -72,7 +71,7 @@ export function Home() {
       );
       showToast("Wallet Created!", "success");
       setUiState({ ...uiState, loading: false, showModal: false });
-      _getWallets()
+      _getWallets();
     } catch (error: any) {
       showToast(error.message, "failed");
     }
@@ -85,15 +84,15 @@ export function Home() {
       const promise = Promise.all([
         instance.getName(),
         instance.getApprovers(),
-        account?.provider?.eth.getBalance(address)
+        account?.provider?.eth.getBalance(address),
       ]);
       const [name, approvals, balance] = await promise;
-      const balanceInEth = account?.provider?.utils.fromWei(balance, 'ether')
+      const balanceInEth = account?.provider?.utils.fromWei(balance, "ether");
       const detail: WalletDetails = {
         address,
         name,
         approvals,
-        balance: +((+balanceInEth).toFixed(3))
+        balance: +(+balanceInEth).toFixed(3),
       };
       return detail;
     } catch (error) {
@@ -168,7 +167,7 @@ export function Home() {
             </button>
           </div>
         </Modal>
-        {account && account.address ? (
+        {account ? (
           <div className="flex flex-col w-full">
             <div className="flex flex-row-reverse px-5 w-full my-3">
               <button
@@ -221,7 +220,8 @@ export function Home() {
                             {i + 1}
                           </td>
                           <td className="px-6 py-4">
-                            {truncateAddress(w.address)}
+                            {/* {truncateAddress(w.address)} */}
+                            {w.address}
                           </td>
                           <td className="px-6 py-4">{w.name}</td>
                           <td className="px-6 py-4">{approvals.join(",")}</td>
@@ -244,7 +244,7 @@ export function Home() {
             </div>
           </div>
         ) : (
-          <NoWalletConnected />
+          <p>Connect Wallet</p>
         )}
       </div>
     </Layout>
