@@ -7,10 +7,11 @@ import { Modal } from "../../../components/Modal";
 import { useFormik } from "formik";
 import { showToast } from "../../../utils/toaster";
 import { ethers } from "ethers";
+import { NoWalletConnected } from "../../../components/NoWalletConnected";
 
 export function WalletTransfers() {
   const account = useAccount();
-  const [wallet, setWallet] = useState<WalletDetails>();
+  // const [wallet, setWallet] = useState<WalletDetails>();
   const [transfers, setTransfers] = useState<any[]>([]);
   const [uiState, setUiState] = useState({
     loading: false,
@@ -34,7 +35,7 @@ export function WalletTransfers() {
       setUiState({ ...uiState, loading: true });
       const { detail, _transfers } = await getWalletDetails(walletAddress);
 
-      setWallet(detail);
+      account.updateWallet(detail);
       setTransfers(_transfers);
       setUiState({ ...uiState, loading: false });
     } catch (error) {
@@ -52,12 +53,15 @@ export function WalletTransfers() {
         account?.provider?.eth.getBalance(address),
       ]);
       const [name, approvals, _transfers, balance] = await promise;
-      const balanceInEth : string = account?.provider?.utils.fromWei(balance, 'ether');
+      const balanceInEth: string = account?.provider?.utils.fromWei(
+        balance,
+        "ether"
+      );
       const detail: WalletDetails = {
         address,
         name,
         approvals,
-        balance: +((+balanceInEth).toFixed(3))
+        balance: +(+balanceInEth).toFixed(3),
       };
       return { detail, _transfers };
     } catch (error) {
@@ -67,14 +71,14 @@ export function WalletTransfers() {
 
   async function _approve(id: number, walletAddress: string) {
     try {
-      if (!wallet) return;
       if (!account) return;
+      if (!account.wallet) return;
       if (!account.address || !account.provider) return;
       setUiState({ ...uiState, loading: true });
       try {
         await new MultiSigWallet(
           account.provider,
-          wallet.address
+          account.wallet.address
         ).approveTransfer(id, walletAddress, account.address);
         setUiState({ ...uiState, loading: false });
         showToast("Operation Successful!", "success");
@@ -83,7 +87,6 @@ export function WalletTransfers() {
         throw error;
       }
     } catch (error: any) {
-        console.log(error.message)
       showToast(error.message, "failed");
       setUiState({ ...uiState, loading: false });
     }
@@ -95,24 +98,25 @@ export function WalletTransfers() {
       amount: "",
     },
     onSubmit: async (values) => {
-      if (!wallet) return;
       if (!account) return;
+      if (!account.wallet) return;
       if (!account.address || !account.provider) return;
       try {
-        if (wallet.balance < +values.amount) throw new Error('Insufficent Balance to create Transfer')
+        if (account.wallet.balance < +values.amount)
+          throw new Error("Insufficent Balance to create Transfer");
         setUiState({ ...uiState, loading: true });
         await new MultiSigWallet(
-          account?.provider,
-          wallet?.address
+          account.provider,
+          account.wallet.address
         ).createTransfer(
           String(values.amount),
           values.to,
-          wallet?.address,
+          account.wallet.address,
           account.address
         );
         setUiState({ ...uiState, loading: false });
         showToast("Transfer added!", "success");
-        _getWallet()
+        _getWallet();
       } catch (error: any) {
         showToast(error.message, "failed");
         setUiState({ ...uiState, loading: false });
@@ -162,21 +166,8 @@ export function WalletTransfers() {
         </Modal>
         {account ? (
           <div className="flex flex-col w-full">
-            <div className="flex flex-row px-5 w-full my-3 justify-between bg-white items-center">
-              <h4 className="font-black">Transfers</h4>
-            </div>
             <div className="flex flex-row px-5 w-full my-3 justify-between items-center">
-              {wallet && (
-                <div>
-                  <h2 >{wallet.name}</h2>
-                  <p className="text-gray-400">
-                    Bal: {wallet.balance} RWA
-                  </p>
-                  <p className="text-gray-400">
-                    {wallet.approvals.length} Approvals
-                  </p>
-                </div>
-              )}
+              <h4 className="font-black">Transfers</h4>
               <button
                 onClick={manageModal}
                 className="float-right text-nowrap rounded-lg px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
@@ -232,11 +223,17 @@ export function WalletTransfers() {
                         </td>
                         <td className="px-6 py-4">
                           <button
-                            onClick={() => _approve(e.id, wallet!.address)}
+                            onClick={() =>
+                              _approve(e.id, account.wallet!.address)
+                            }
                             className="text-nowrap rounded-lg mt-6 w-full px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
-                            disabled={uiState.loading}
+                            disabled={uiState.loading || e.sent}
                           >
-                            {uiState.loading ? "processing..." : "Approve"}
+                            {uiState.loading
+                              ? "processing..."
+                              : e.sent
+                              ? "Sent"
+                              : "Approve"}
                           </button>
                         </td>
                       </tr>
@@ -246,7 +243,7 @@ export function WalletTransfers() {
             </div>
           </div>
         ) : (
-          <p>Connect Wallet</p>
+          <NoWalletConnected />
         )}
       </div>
     </Layout>

@@ -15,6 +15,9 @@ const SideBar = () => {
 
   useEffect(() => {
     getMultiSigWallet();
+    return () => {
+      setWalletAddress(undefined)
+    }
   }, []);
 
   function getMultiSigWallet() {
@@ -59,8 +62,8 @@ const SideBar = () => {
           {/* Kept padding here */}
           {account && walletAddress && (
             <>
-              <Link to={`/wallet`}>
-                <h4 className="text-sm font-bold my-2">Wallet {">>"}</h4>
+              <Link to={`/`}>
+                <h4 className="text-sm font-bold my-2">Home {">>"}</h4>
               </Link>
               <Link to={`/wallet/transfers/${walletAddress}`}>
                 <h4 className="text-sm font-bold my-2">Transfer Funds {">>"}</h4>

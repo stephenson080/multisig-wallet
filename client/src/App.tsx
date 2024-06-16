@@ -8,9 +8,6 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
-    children: [
-      { path: "wallet", element: <Home /> },
-    ],
   },
   {
     path: "/wallet/transfers/:address",
