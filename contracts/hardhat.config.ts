@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
     //   accounts: [PRIVATE_KEY_1],
     // },
     assetchain_test: {
-      url: "https://rpctestnet.xendrwachain.com",
+      url: "https://enugu-rpc.assetchain.org",
       accounts: [PRIVATE_KEY_1],
     },
     rinkeby: {
@@ -52,8 +52,8 @@ const config: HardhatUserConfig = {
         network: "assetchain_test",
         chainId: 42421,
         urls: {
-          apiURL: "http://scout.xendrwachain.com/api",
-          browserURL: "http://scout.xendrwachain.com/",
+          apiURL: "https://scan-testnet.assetchain.org/api",
+          browserURL: "https://scan-testnet.assetchain.org/",
         },
       },
     ],
