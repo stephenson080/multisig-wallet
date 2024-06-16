@@ -173,7 +173,7 @@ export function Home() {
             </button>
           </div>
         </Modal>
-        {account && account.address ? (
+        {account ? (
           <div className="flex flex-col w-full">
             <div className="flex flex-row-reverse px-5 w-full my-3">
               <button
@@ -226,7 +226,8 @@ export function Home() {
                             {i + 1}
                           </td>
                           <td className="px-6 py-4">
-                            {truncateAddress(w.address)}
+                            {/* {truncateAddress(w.address)} */}
+                            {w.address}
                           </td>
                           <td className="px-6 py-4">{w.name}</td>
                           <td className="px-6 py-4">{approvals.join(",")}</td>
@@ -251,7 +252,7 @@ export function Home() {
             </div>
           </div>
         ) : (
-          <NoWalletConnected />
+          <p>Connect Wallet</p>
         )}
       </div>
     </Layout>
