@@ -208,7 +208,7 @@ export function Home() {
             </button>
           </div>
         </Modal>
-        {account && account.address ? (
+        {account ? (
           <div className="flex flex-col w-full">
             <div className="flex flex-row-reverse px-5 w-full my-3">
               <button
@@ -289,7 +289,7 @@ export function Home() {
             )}
           </div>
         ) : (
-          <NoWalletConnected />
+          <p>Connect Wallet</p>
         )}
       </div>
     </Layout>

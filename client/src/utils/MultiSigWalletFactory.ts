@@ -18,7 +18,7 @@ export class MultiSigWalletFactory {
     //     MultiSigWalletFactoryABI.abi,
     //     new ethers.VoidSigner(
     //       multiSigWalletFactoryAddress,
-    //       ethers.getDefaultProvider("https://rpctestnet.xendrwachain.com")
+    //       ethers.getDefaultProvider("https://enugu-rpc.assetchain.org")
     //     )
     //   );
     

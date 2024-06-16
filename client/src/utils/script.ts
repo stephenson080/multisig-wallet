@@ -10,8 +10,8 @@ declare global {
 
 const SWAP_ROUTER_ADDRESS_BSC = "0xe41f0FF3f4d90Bb1c4e32714532e064F9eA95F19";
 const ASSET_CHAIN_TEST_CHAIN_ID = 42421;
-const ASSET_CHAIN_TEST_CHAIN_RPC = "https://rpctestnet.xendrwachain.com";
-const ASSET_CHAIN_TEST_CHAIN_EXPLORER = "https://testnet.xendrwachain.com";
+const ASSET_CHAIN_TEST_CHAIN_RPC = "https://enugu-rpc.assetchain.org";
+const ASSET_CHAIN_TEST_CHAIN_EXPLORER = "https://scan-testnet.assetchain.org";
 
 const { ethereum } = window;
 

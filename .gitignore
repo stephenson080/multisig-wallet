@@ -5,3 +5,4 @@ contracts/*.env
 contracts/artifacts
 contracts/cache
 contracts/typechain-types
+*yarn.lock
