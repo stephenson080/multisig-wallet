@@ -99,3 +99,5 @@ export const SAMPLEABI = `[
       "type": "receive"
     }
   ]`
+
+export const executedChainId = 42421

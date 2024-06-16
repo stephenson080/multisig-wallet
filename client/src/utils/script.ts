@@ -1,5 +1,6 @@
 import Web3 from "web3";
 import { BigNumber } from "@ethersproject/bignumber";
+import { executedChainId } from "./constants";
 
 declare global {
   interface Window {
@@ -9,7 +10,7 @@ declare global {
 }
 
 const SWAP_ROUTER_ADDRESS_BSC = "0xe41f0FF3f4d90Bb1c4e32714532e064F9eA95F19";
-const ASSET_CHAIN_TEST_CHAIN_ID = 42421;
+const ASSET_CHAIN_TEST_CHAIN_ID = executedChainId;
 const ASSET_CHAIN_TEST_CHAIN_RPC = "https://enugu-rpc.assetchain.org";
 const ASSET_CHAIN_TEST_CHAIN_EXPLORER = "https://scan-testnet.assetchain.org";
 
@@ -17,11 +18,9 @@ const { ethereum } = window;
 
 export async function connectToBrowserProvider(
   chainId = ASSET_CHAIN_TEST_CHAIN_ID
-): Promise<string |undefined> {
+): Promise<string | undefined> {
   if (ethereum) {
     let address: string;
-    
-
 
     try {
       const accounts = await ethereum.request({
@@ -34,19 +33,19 @@ export async function connectToBrowserProvider(
           method: "wallet_switchEthereumChain",
           params: [{ chainId: Web3.utils.toHex(chainId) }],
         });
-        window.web3 = new Web3(ethereum)
-        localStorage.setItem('connectedAccount', address)
-        return address
+        window.web3 = new Web3(ethereum);
+        localStorage.setItem("connectedAccount", address);
+        return address;
       } catch (switchError: any) {
         if (switchError.code === 4902) {
           try {
-            const accounts =  await addChain(chainId)
-            address = accounts[0]
-            localStorage.setItem('connectedAccount', address)
-            return address
+            const accounts = await addChain(chainId);
+            address = accounts[0];
+            localStorage.setItem("connectedAccount", address);
+            return address;
           } catch (addError) {
             console.error("Failed to add chain:", addError);
-            return
+            return;
           }
         } else {
           console.error("Failed to switch to chain:", switchError);
@@ -78,7 +77,6 @@ async function confirmUserNetwork() {
     return;
   }
   let userChainId = await ethereum.request({ method: "eth_chainId" });
-  console.log("User is connected to chain " + userChainId);
 
   // String, hex code of the chainId of the  network
   let ChainId = "0x38";
@@ -141,23 +139,34 @@ export async function addChain(
         },
       ],
     });
-    console.log("Successfully added and switched to chain:", chainId);
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     return accounts;
   } catch (addError) {
-    throw addError
+    throw addError;
+  }
+}
+
+export async function switchToRightNetwork(chainId = executedChainId) :Promise<string[]>  {
+  try {
+    await ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: Web3.utils.toHex(chainId) }], // Example: 0x1 for Ethereum Mainnet
+    });
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    return accounts;
+  } catch (error) {
+    return await addChain();
   }
 }
 
 export async function autoConnectWallet() {
-    const connectedAccount = localStorage.getItem('connectedAccount');
+  const connectedAccount = localStorage.getItem("connectedAccount");
 
-    if (connectedAccount) {
-        console.log('Found connected account in local storage:', connectedAccount);
+  if (connectedAccount) {
 
-        // Attempt to connect the wallet and switch chain
-        return await connectToBrowserProvider();
-    }
+    // Attempt to connect the wallet and switch chain
+    return await connectToBrowserProvider();
+  }
 }
 // export async function swap(destinationToken, sourceToken, sourceAmount, address) {
 //     let _sourceAmount = BigNumber.from((sourceAmount * 10 ** 18)

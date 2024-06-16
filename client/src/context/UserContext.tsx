@@ -5,12 +5,19 @@ import {
   useEffect,
   useState,
 } from "react";
-import { autoConnectWallet, getAddress, loadProvider } from "../utils/script";
+import {
+  autoConnectWallet,
+  getAddress,
+  loadProvider,
+  switchToRightNetwork,
+} from "../utils/script";
 import { WalletDetails } from "../utils/type";
+import { ethers } from "ethers";
+import { executedChainId } from "../utils/constants";
 
 // Define the shape of the context state
 interface AccountContextState {
-  wallet: WalletDetails |null
+  wallet: WalletDetails | null;
   provider: any;
   address: string | null;
   updateAddress: (address: string) => void;
@@ -28,9 +35,7 @@ export const AccountContext = createContext<AccountContextState>({
   address: null,
   provider: null,
   updateAddress: (_a: string) => {},
-  updateWallet(wallet) {
-      
-  }
+  updateWallet(wallet) {},
 });
 
 // The UserProvider component that wraps its children components in a UserContext Provider,
@@ -44,15 +49,12 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 
   let account = { provider, address, wallet };
 
-
-
   const fetchData = async () => {
     const provider = await loadProvider();
     const address = await autoConnectWallet();
 
     setProvider(provider);
     setAddress(address ? address : null);
-
   };
 
   useEffect(() => {
@@ -60,13 +62,26 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
   }, []);
 
   useEffect(() => {
-    window.ethereum.on('accountsChanged', (accounts: string[]) => {
-      localStorage.setItem('connectedAccount', accounts[0]);
+    window.ethereum.on("accountsChanged", (accounts: string[]) => {
+      localStorage.setItem("connectedAccount", accounts[0]);
       setAddress(accounts[0]);
     });
-  }, []);
+    window.ethereum.on("chainChanged", async (chainId: any) => {
+      if (chainId !== ethers.toBeHex(executedChainId)) {
+        const prompt = window.confirm(
+          "Wrong Network! Click Okay to switch to Asset Chain?"
+        );
+        if (prompt) {
+          try {
+            const accounts = await switchToRightNetwork();
+            setAddress(accounts.length > 0 ? accounts[0] : null);
+          } catch (error) {
 
-  
+          }
+        }
+      }
+    });
+  }, []);
 
   return (
     <AccountContext.Provider
@@ -76,7 +91,7 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
           setAddress(address);
         },
         updateWallet(wallet) {
-            setWallet(wallet)
+          setWallet(wallet);
         },
       }}
     >
