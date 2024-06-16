@@ -22,3 +22,11 @@ export interface Transaction {
     approvals: any;
     executed: boolean;
 }
+
+export interface Transfer {
+    id: number;
+    amount: any;
+    to: string;
+    approvals: any;
+    sent: boolean;
+}

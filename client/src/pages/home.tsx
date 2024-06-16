@@ -12,16 +12,17 @@ import { showToast } from "../utils/toaster";
 import { Link, Outlet } from "react-router-dom";
 import { NoWalletConnected } from "../components/NoWalletConnected";
 import { Empty } from "../components/Empty";
+import { Loader } from "../components/Loader";
 
 export function Home() {
   const account = useAccount();
   const [uiState, setUiState] = useState({
     loading: false,
     showModal: false,
+    loadingData: false,
   });
   const [walletDetails, setWalletDetails] = useState<WalletDetails[]>([]);
   useEffect(() => {
-    console.log(account?.address);
     _getWallets();
   }, [account?.address, account?.provider]);
 
@@ -30,6 +31,7 @@ export function Home() {
     if (!account.address) return;
     if (!account.provider) return;
     try {
+      setUiState({ ...uiState, loadingData: true });
       const wallets = await MultiSigWalletFactory.getApprovalsWallet(
         account.address,
         account.provider
@@ -48,8 +50,10 @@ export function Home() {
           throw error;
         }
       }
+      setUiState({ ...uiState, loadingData: false });
       setWalletDetails([..._walletDetails]);
     } catch (error) {
+      setUiState({ ...uiState, loadingData: false });
       console.log(error);
     }
   }
@@ -80,6 +84,7 @@ export function Home() {
       _getWallets();
     } catch (error: any) {
       showToast(error.message, "failed");
+      setUiState({ ...uiState, loading: false });
     }
   }
 
@@ -113,22 +118,44 @@ export function Home() {
       approvals: "",
     },
     onSubmit: async (values) => {
-      console.log(values.approvals, "sja");
-      if (!values.approvals) {
-        showToast("Invalid Approval Value", "failed");
-        return;
+      try {
+        if (+values.quorem < 2) {
+          showToast("Invalid amount of quorom", "failed");
+          return;
+        }
+        if (!values.approvals) {
+          showToast("Invalid Approval Value", "failed");
+          return;
+        }
+        let approvals = values.approvals.split(",");
+        if (!account) {
+          showToast("No web3 provider detected!", "failed");
+          return;
+        }
+        const exist = approvals.find((a) => a === account.address);
+        if (!exist) {
+          approvals = [account.address!, ...approvals];
+        }
+        for (let a of approvals) {
+          if (!ethers.isAddress(a)) {
+            throw new Error(`${a} is not a valid Address`);
+          }
+        }
+        if (!approvals || approvals.length < 2) {
+          showToast("there should be at least 2 approval", "failed");
+          return;
+        }
+        if (+values.quorem > approvals.length) {
+          showToast(
+            "number of quorem can't be greater than approvals",
+            "failed"
+          );
+          return;
+        }
+        await _createMultiSigWallet(approvals, +values.quorem, values.name);
+      } catch (error: any) {
+        showToast(error.message, "failed");
       }
-      let approvals = values.approvals.split(",");
-      if (!account) {
-        showToast("No web3 provider detected!", "failed");
-        return;
-      }
-      if (!approvals || approvals.length <= 0) {
-        showToast("Invalid Approval Value", "failed");
-        return;
-      }
-      approvals = [account.address!, ...approvals];
-      await _createMultiSigWallet(approvals, +values.quorem, values.name);
     },
   });
   return (
@@ -140,6 +167,13 @@ export function Home() {
           onClose={manageModal}
         >
           <div className="flex flex-col w-full mt-6">
+            <div className="flex flex-wrap w-full mb-2">
+              <p className="text-sm text-red-400">
+                Note: The connected wallet address is added to the list of
+                approvals regardless of if you add it or not
+              </p>
+            </div>
+
             <input
               type="text"
               name="approvals"
@@ -168,6 +202,7 @@ export function Home() {
             <button
               onClick={() => formik.handleSubmit()}
               className="text-nowrap rounded-lg mt-6 w-full py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
+              disabled={uiState.loading}
             >
               {uiState.loading ? "processing..." : "Create"}
             </button>
@@ -183,72 +218,75 @@ export function Home() {
                 Create Wallet
               </button>
             </div>
-
-            <div className="flex flex-col w-full overflow-y-auto px-5 py-5">
-              {walletDetails.length > 0 ? (
-                <table className="w-full text-left text-sm text-slate-500  rtl:text-right">
-                  <thead className="bg-blue-50 text-xs uppercase ">
-                    <tr>
-                      <th scope="col" className="px-6 py-3">
-                        ID
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Address
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Name
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Approvals
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Wallet balance
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {walletDetails.map((w, i) => {
-                      const approvals = w.approvals.map((a) =>
-                        truncateAddress(a)
-                      );
-                      return (
-                        <tr
-                          key={i}
-                          className="border-b bg-white-50 hover:bg-blue-50 cursor-pointer"
-                        >
-                          <td
-                            scope="row"
-                            className="whitespace-nowrap px-6 py-4 font-medium"
+            {uiState.loadingData ? (
+              <Loader />
+            ) : (
+              <div className="flex flex-col w-full overflow-y-auto px-5 py-5">
+                {walletDetails.length > 0 ? (
+                  <table className="w-full text-left text-sm text-slate-500  rtl:text-right">
+                    <thead className="bg-blue-50 text-xs uppercase ">
+                      <tr>
+                        <th scope="col" className="px-6 py-3">
+                          ID
+                        </th>
+                        <th scope="col" className="px-6 py-3">
+                          Address
+                        </th>
+                        <th scope="col" className="px-6 py-3">
+                          Name
+                        </th>
+                        <th scope="col" className="px-6 py-3">
+                          Approvals
+                        </th>
+                        <th scope="col" className="px-6 py-3">
+                          Wallet balance
+                        </th>
+                        <th scope="col" className="px-6 py-3">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {walletDetails.map((w, i) => {
+                        const approvals = w.approvals.map((a) =>
+                          truncateAddress(a)
+                        );
+                        return (
+                          <tr
+                            key={i}
+                            className="border-b bg-white-50 hover:bg-blue-50 cursor-pointer"
                           >
-                            {i + 1}
-                          </td>
-                          <td className="px-6 py-4">
-                            {truncateAddress(w.address)}
-                          </td>
-                          <td className="px-6 py-4">{w.name}</td>
-                          <td className="px-6 py-4">{approvals.join(",")}</td>
-                          <td className="px-6 py-4">{w.balance} RWA</td>
-                          <td className="px-6 py-4">
-                            <Link to={`/wallet/transfers/${w.address}`}>
-                              <button className="text-nowrap rounded-lg  w-full px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400">
-                                View Wallet
-                              </button>
-                            </Link>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : (
-                <Empty>
-                  <p>No Wallet</p>
-                </Empty>
-              )}
-            </div>
+                            <td
+                              scope="row"
+                              className="whitespace-nowrap px-6 py-4 font-medium"
+                            >
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4">
+                              {truncateAddress(w.address)}
+                            </td>
+                            <td className="px-6 py-4">{w.name}</td>
+                            <td className="px-6 py-4">{approvals.join(",")}</td>
+                            <td className="px-6 py-4">{w.balance} RWA</td>
+                            <td className="px-6 py-4">
+                              <Link to={`/wallet/transfers/${w.address}`}>
+                                <button className="text-nowrap rounded-lg  w-full px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400">
+                                  View Wallet
+                                </button>
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <Empty>
+                    <p>No Wallet</p>
+                  </Empty>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <NoWalletConnected />

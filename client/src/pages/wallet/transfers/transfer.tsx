@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "../../../context/UserContext";
-import { WalletDetails } from "../../../utils/type";
+import { Transfer, WalletDetails } from "../../../utils/type";
 import MultiSigWallet from "../../../utils/MultiSigWallet";
 import { Layout } from "../../../components/Layout";
 import { Modal } from "../../../components/Modal";
@@ -8,14 +8,16 @@ import { useFormik } from "formik";
 import { showToast } from "../../../utils/toaster";
 import { ethers } from "ethers";
 import { NoWalletConnected } from "../../../components/NoWalletConnected";
+import { Loader } from "../../../components/Loader";
 
 export function WalletTransfers() {
   const account = useAccount();
   // const [wallet, setWallet] = useState<WalletDetails>();
-  const [transfers, setTransfers] = useState<any[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [uiState, setUiState] = useState({
     loading: false,
     showModal: false,
+    loadingData: false,
   });
 
   useEffect(() => {
@@ -32,14 +34,14 @@ export function WalletTransfers() {
     const walletAddress = location.pathname.split("/").pop();
     if (!walletAddress) return;
     try {
-      setUiState({ ...uiState, loading: true });
+      setUiState({ ...uiState, loadingData: true });
       const { detail, _transfers } = await getWalletDetails(walletAddress);
 
       account.updateWallet(detail);
       setTransfers(_transfers);
-      setUiState({ ...uiState, loading: false });
+      setUiState({ ...uiState, loadingData: false });
     } catch (error) {
-      setUiState({ ...uiState, loading: false });
+      setUiState({ ...uiState, loadingData: false });
     }
   }
   async function getWalletDetails(address: string) {
@@ -175,72 +177,75 @@ export function WalletTransfers() {
                 Add Transfer
               </button>
             </div>
-
-            <div className="flex flex-col w-full overflow-y-auto px-5 py-5">
-              <table className="w-full text-left text-sm text-slate-500  rtl:text-right">
-                <thead className="bg-blue-50 text-xs uppercase ">
-                  <tr>
-                    <th scope="col" className="px-6 py-3">
-                      ID
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Amount&nbsp;($)
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Recipient
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Approvals
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      sent
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Approve
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transfers?.length > 0 &&
-                    transfers.map((e: any, i: any) => (
-                      <tr
-                        key={i}
-                        className="border-b bg-white-50 hover:bg-blue-50 cursor-pointer"
-                      >
-                        <td
-                          scope="row"
-                          className="whitespace-nowrap px-6 py-4 font-medium"
+            {uiState.loadingData ? (
+              <Loader />
+            ) : (
+              <div className="flex flex-col w-full overflow-y-auto px-5 py-5">
+                <table className="w-full text-left text-sm text-slate-500  rtl:text-right">
+                  <thead className="bg-blue-50 text-xs uppercase ">
+                    <tr>
+                      <th scope="col" className="px-6 py-3">
+                        ID
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Amount&nbsp;($)
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Recipient
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Approvals
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        sent
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Approve
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transfers?.length > 0 &&
+                      transfers.map((e, i) => (
+                        <tr
+                          key={i}
+                          className="border-b bg-white-50 hover:bg-blue-50 cursor-pointer"
                         >
-                          {Number(e.id) + 1}
-                        </td>
-                        <td className="px-6 py-4">
-                          {ethers.formatEther(e.amount)}
-                        </td>
-                        <td className="px-6 py-4">{e.to}</td>
-                        <td className="px-6 py-4">{e.approvals}</td>
-                        <td className="px-6 py-4">
-                          {e.sent ? "true" : "false"}
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={() =>
-                              _approve(e.id, account.wallet!.address)
-                            }
-                            className="text-nowrap rounded-lg mt-6 w-full px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
-                            disabled={uiState.loading || e.sent}
+                          <td
+                            scope="row"
+                            className="whitespace-nowrap px-6 py-4 font-medium"
                           >
-                            {uiState.loading
-                              ? "processing..."
-                              : e.sent
-                              ? "Sent"
-                              : "Approve"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+                            {Number(e.id) + 1}
+                          </td>
+                          <td className="px-6 py-4">
+                            {ethers.formatEther(e.amount)}
+                          </td>
+                          <td className="px-6 py-4">{e.to}</td>
+                          <td className="px-6 py-4">{e.approvals}</td>
+                          <td className="px-6 py-4">
+                            {e.sent ? "true" : "false"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() =>
+                                _approve(e.id, account.wallet!.address)
+                              }
+                              className="text-nowrap rounded-lg mt-6 w-full px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
+                              disabled={uiState.loading || e.sent}
+                            >
+                              {uiState.loading
+                                ? "processing..."
+                                : e.sent
+                                ? "Sent"
+                                : "Approve"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         ) : (
           <NoWalletConnected />
