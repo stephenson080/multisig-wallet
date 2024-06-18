@@ -1,8 +1,10 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import dotenv from "dotenv"
 
-const PRIVATE_KEY_1 =
-  "b19a232df2d5aa197f07fb0f2dffd824fe77b4855ae913b8e6bd3a47f9f18ba8";
+dotenv.config()
+
+const PRIVATE_KEY_1 = process.env.PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -28,7 +30,7 @@ const config: HardhatUserConfig = {
     hardhat: {},
     localhost: {
       url: "http://127.0.0.1:8545/",
-      accounts: [PRIVATE_KEY_1],
+      accounts: [PRIVATE_KEY_1!],
     },
     // sepolia: {
     //   url: process.env.SEPOLIA_RPC,
@@ -36,11 +38,11 @@ const config: HardhatUserConfig = {
     // },
     assetchain_test: {
       url: "https://enugu-rpc.assetchain.org",
-      accounts: [PRIVATE_KEY_1],
+      accounts: [PRIVATE_KEY_1!],
     },
     rinkeby: {
       url: "https://eth-rinkeby.alchemyapi.io/v2/123abc123abc123abc123abc123abcde",
-      accounts: [PRIVATE_KEY_1],
+      accounts: [PRIVATE_KEY_1!],
     },
   },
   etherscan: {
