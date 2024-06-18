@@ -67,7 +67,6 @@ const Header = () => {
       ) : (
         <button
           onClick={connectWallet}
-          // disabled={disabled}
           className="text-nowrap rounded-lg px-5 py-2 text-[14px]/[20px] text-white capitalize bg-blue-400"
         >
           connect wallet

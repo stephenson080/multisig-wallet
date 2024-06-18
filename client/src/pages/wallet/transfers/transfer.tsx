@@ -13,7 +13,6 @@ import { ApprovalsList } from "../../../components/ApprovalsList";
 
 export function WalletTransfers() {
   const account = useAccount();
-  // const [wallet, setWallet] = useState<WalletDetails>();
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [uiState, setUiState] = useState({
     loading: false,
@@ -58,7 +57,7 @@ export function WalletTransfers() {
       const [name, approvals, _transfers, balance] = await promise;
       const balanceInEth: string = account?.provider?.utils.fromWei(
         balance,
-        "ether"
+        "ether",
       );
       const detail: WalletDetails = {
         address,
@@ -81,7 +80,7 @@ export function WalletTransfers() {
       try {
         await new MultiSigWallet(
           account.provider,
-          account.wallet.address
+          account.wallet.address,
         ).approveTransfer(id, walletAddress, account.address);
         setUiState({ ...uiState, loading: false });
         showToast("Operation Successful!", "success");
@@ -110,12 +109,12 @@ export function WalletTransfers() {
         setUiState({ ...uiState, loading: true });
         await new MultiSigWallet(
           account.provider,
-          account.wallet.address
+          account.wallet.address,
         ).createTransfer(
           String(values.amount),
           values.to,
           account.wallet.address,
-          account.address
+          account.address,
         );
         setUiState({ ...uiState, loading: false });
         showToast("Transfer added!", "success");
@@ -178,7 +177,11 @@ export function WalletTransfers() {
                 Add Transfer
               </button>
             </div>
-            <ApprovalsList approvals={account && account.wallet ? account.wallet.approvals : []} />
+            <ApprovalsList
+              approvals={
+                account && account.wallet ? account.wallet.approvals : []
+              }
+            />
             {uiState.loadingData ? (
               <Loader />
             ) : (
@@ -238,8 +241,8 @@ export function WalletTransfers() {
                               {uiState.loading
                                 ? "processing..."
                                 : e.sent
-                                ? "Sent"
-                                : "Approve"}
+                                  ? "Sent"
+                                  : "Approve"}
                             </button>
                           </td>
                         </tr>

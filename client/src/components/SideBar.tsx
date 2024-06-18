@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import MultiSigWallet from "../utils/MultiSigWallet.js";
 import { useAccount } from "../context/UserContext.js";
-import { useFormik } from "formik";
 import { Link } from "react-router-dom";
 
 const SideBar = () => {
@@ -16,8 +14,8 @@ const SideBar = () => {
   useEffect(() => {
     getMultiSigWallet();
     return () => {
-      setWalletAddress(undefined)
-    }
+      setWalletAddress(undefined);
+    };
   }, []);
 
   function getMultiSigWallet() {
@@ -28,7 +26,6 @@ const SideBar = () => {
 
   return (
     <div>
-      {/* Hamburger Icon */}
       <div className="md:hidden p-4">
         <button onClick={toggleSidebar}>
           <svg
@@ -47,8 +44,6 @@ const SideBar = () => {
           </svg>
         </button>
       </div>
-
-      {/* Sidebar */}
       <div
         className={`flex flex-col gap-7 w-full h-screen bg-blue-100 md:block ${
           isOpen ? "block" : "hidden"
@@ -59,14 +54,15 @@ const SideBar = () => {
           <p className="text-xs italic">...for Asset Chain</p>
         </div>
         <div className="flex flex-col w-full px-3 py-4 pb-10">
-          {/* Kept padding here */}
           {account && walletAddress && (
             <>
               <Link to={`/`}>
                 <h4 className="text-sm font-bold my-2">Home {">>"}</h4>
               </Link>
               <Link to={`/wallet/transfers/${walletAddress}`}>
-                <h4 className="text-sm font-bold my-2">Transfer Funds {">>"}</h4>
+                <h4 className="text-sm font-bold my-2">
+                  Transfer Funds {">>"}
+                </h4>
               </Link>
               <Link to={`/wallet/transactions/${walletAddress}`}>
                 <h4 className="text-sm font-bold my-2">Transactions {">>"}</h4>

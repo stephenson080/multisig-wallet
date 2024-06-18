@@ -4,10 +4,9 @@ import { Transaction, WalletDetails } from "../../../utils/type";
 import MultiSigWallet from "../../../utils/MultiSigWallet";
 import { Layout } from "../../../components/Layout";
 import { Modal } from "../../../components/Modal";
-import { useFormik } from "formik";
 import { showToast } from "../../../utils/toaster";
 import { ethers } from "ethers";
-import { abiToFunction, truncateAddress } from "../../../utils/helpers";
+import { abiToFunction } from "../../../utils/helpers";
 import { AbiInput } from "../../../utils/type";
 import { SAMPLEABI, SAMPLE_CONTRACT_ADDRESS } from "../../../utils/constants";
 import { NoWalletConnected } from "../../../components/NoWalletConnected";
@@ -135,7 +134,7 @@ export function WalletTransactions() {
       const [name, approvals, _transactions, balance] = await promise;
       const balanceInEth: string = account?.provider?.utils.fromWei(
         balance,
-        "ether"
+        "ether",
       );
       const detail: WalletDetails = {
         address,
@@ -158,7 +157,7 @@ export function WalletTransactions() {
       try {
         await new MultiSigWallet(
           account.provider,
-          wallet.address
+          wallet.address,
         ).approveTransaction(id, walletAddress, account.address);
         setUiState({ ...uiState, loading: false });
         showToast("Operattion Successful", "success");
@@ -201,16 +200,16 @@ export function WalletTransactions() {
       const _interface = new ethers.Interface(formState.abi);
       const data = _interface.encodeFunctionData(
         formState.selectedFunction.name,
-        inputs
+        inputs,
       );
       await new MultiSigWallet(
         account.provider,
-        wallet.address
+        wallet.address,
       ).createTransaction(
         formState.contractaddress,
         data,
         wallet.address,
-        account.address
+        account.address,
       );
       setUiState({ ...uiState, loading: false });
       showToast("Transaction Added!", "success");
@@ -326,7 +325,11 @@ export function WalletTransactions() {
                 Add Transaction
               </button>
             </div>
-            <ApprovalsList approvals={account && account.wallet ? account.wallet.approvals : []} />
+            <ApprovalsList
+              approvals={
+                account && account.wallet ? account.wallet.approvals : []
+              }
+            />
             {uiState.loadingData ? (
               <Loader />
             ) : (
@@ -378,8 +381,8 @@ export function WalletTransactions() {
                               {uiState.loading
                                 ? "processing..."
                                 : e.executed
-                                ? "Executed"
-                                : "Approve"}
+                                  ? "Executed"
+                                  : "Approve"}
                             </button>
                           </td>
                         </tr>

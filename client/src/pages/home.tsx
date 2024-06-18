@@ -4,12 +4,10 @@ import { Layout } from "../components/Layout";
 import { ethers } from "ethers";
 import { MultiSigWalletFactory } from "../utils/MultiSigWalletFactory";
 import MultiSigWallet from "../utils/MultiSigWallet";
-import { truncateAddress } from "../utils/helpers";
 import { WalletDetails } from "../utils/type";
 import { Modal } from "../components/Modal";
-import { useFormik } from "formik";
 import { showToast } from "../utils/toaster";
-import { Link, Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { NoWalletConnected } from "../components/NoWalletConnected";
 import { Empty } from "../components/Empty";
 import { Loader } from "../components/Loader";
@@ -24,9 +22,9 @@ export function Home() {
     loadingData: false,
   });
   const [formState, setFormState] = useState<{
-    quorem: number,
-    approvals: string[],
-    name: string,
+    quorem: number;
+    approvals: string[];
+    name: string;
   }>({
     quorem: 2,
     approvals: [],
@@ -38,13 +36,13 @@ export function Home() {
   }, [account?.address, account?.provider]);
 
   useEffect(() => {
-    setInitialApprovals()
-  }, [account?.address])
+    setInitialApprovals();
+  }, [account?.address]);
 
-  function setInitialApprovals(){
-    if (!account)return
-    if (!account.address) return
-    setFormState({...formState, approvals: [account.address]})
+  function setInitialApprovals() {
+    if (!account) return;
+    if (!account.address) return;
+    setFormState({ ...formState, approvals: [account.address] });
   }
 
   async function _getWallets() {
@@ -55,7 +53,7 @@ export function Home() {
       setUiState({ ...uiState, loadingData: true });
       const wallets = await MultiSigWalletFactory.getApprovalsWallet(
         account.address,
-        account.provider
+        account.provider,
       );
 
       const _walletDetails: WalletDetails[] = [];
@@ -63,7 +61,7 @@ export function Home() {
         try {
           const detail = await getWalletDetails(wallet);
           const exist = _walletDetails.find(
-            (w) => w.address === detail.address
+            (w) => w.address === detail.address,
           );
           if (exist) continue;
           _walletDetails.push(detail);
@@ -83,8 +81,7 @@ export function Home() {
     setUiState({ ...uiState, showModal: !uiState.showModal });
   }
 
-  async function _createMultiSigWallet(
-  ) {
+  async function _createMultiSigWallet() {
     try {
       if (!account) return;
       if (!account.address) return;
@@ -106,10 +103,7 @@ export function Home() {
         return;
       }
       if (formState.quorem > formState.approvals.length) {
-        showToast(
-          "number of quorem can't be greater than approvals",
-          "failed"
-        );
+        showToast("number of quorem can't be greater than approvals", "failed");
         return;
       }
       for (let a of formState.approvals) {
@@ -117,14 +111,14 @@ export function Home() {
           throw new Error(`${a} is not a valid Address`);
         }
       }
-      
+
       setUiState({ ...uiState, loading: true });
       await MultiSigWalletFactory.createWallet(
         formState.approvals,
         formState.quorem,
         formState.name,
         account.provider,
-        account.address
+        account.address,
       );
       showToast("Wallet Created!", "success");
       setUiState({ ...uiState, loading: false, showModal: false });
@@ -166,13 +160,13 @@ export function Home() {
 
   function onApprovalRemoved(id: number) {
     const updatedApproval = [...formState.approvals];
-    updatedApproval.splice(id, 1)
+    updatedApproval.splice(id, 1);
     setFormState({ ...formState, approvals: updatedApproval });
   }
 
-  function addApproval(){
+  function addApproval() {
     const updatedApproval = [...formState.approvals];
-    updatedApproval.push('')
+    updatedApproval.push("");
     setFormState({ ...formState, approvals: [...updatedApproval] });
   }
 
@@ -316,7 +310,7 @@ export function Home() {
             )}
           </div>
         ) : (
-          <p>Connect Wallet</p>
+          <NoWalletConnected />
         )}
       </div>
     </Layout>
