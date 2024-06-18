@@ -12,25 +12,25 @@
 2. navigate to the project root folder and install project dependencies by run the command below
 ### using Yarn
 
-```bash 
+```shell 
 yarn install
 ```
 
 ### using NPM 
 
-```bash 
+```shell 
 npm install
 ```
 
 3. to run the project,
 ### using Yarn
 
-```bash
+```shell
 yarn dev
 ```
 
 ### using NPM 
-```bash
+```shell
 npm run dev
 ```
 

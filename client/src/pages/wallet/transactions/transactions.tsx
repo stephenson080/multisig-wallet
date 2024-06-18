@@ -12,6 +12,7 @@ import { AbiInput } from "../../../utils/type";
 import { SAMPLEABI, SAMPLE_CONTRACT_ADDRESS } from "../../../utils/constants";
 import { NoWalletConnected } from "../../../components/NoWalletConnected";
 import { Loader } from "../../../components/Loader";
+import { ApprovalsList } from "../../../components/ApprovalsList";
 
 interface FormState {
   selectedFunction: AbiInput | null;
@@ -317,7 +318,7 @@ export function WalletTransactions() {
         {account ? (
           <div className="flex flex-col w-full">
             <div className="flex flex-row px-5 w-full my-3 justify-between items-center">
-              <h4 className="font-black">Transactions</h4>
+              <h2 className="font-black">Transactions</h2>
               <button
                 onClick={manageModal}
                 className="float-right text-nowrap rounded-lg px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
@@ -325,6 +326,7 @@ export function WalletTransactions() {
                 Add Transaction
               </button>
             </div>
+            <ApprovalsList approvals={account && account.wallet ? account.wallet.approvals : []} />
             {uiState.loadingData ? (
               <Loader />
             ) : (
@@ -336,10 +338,7 @@ export function WalletTransactions() {
                         ID
                       </th>
                       <th scope="col" className="px-6 py-3">
-                        Amount&nbsp;($)
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Recipient
+                        Contract address
                       </th>
                       <th scope="col" className="px-6 py-3">
                         Approvals
@@ -365,10 +364,7 @@ export function WalletTransactions() {
                           >
                             {Number(e.id) + 1}
                           </td>
-                          <td className="px-6 py-4">
-                            {truncateAddress(e.data)}
-                          </td>
-                          <td className="px-6 py-4">{truncateAddress(e.to)}</td>
+                          <td className="px-6 py-4">{e.to}</td>
                           <td className="px-6 py-4">{e.approvals}</td>
                           <td className="px-6 py-4">
                             {e.executed ? "true" : "false"}

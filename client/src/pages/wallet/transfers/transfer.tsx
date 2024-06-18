@@ -9,6 +9,7 @@ import { showToast } from "../../../utils/toaster";
 import { ethers } from "ethers";
 import { NoWalletConnected } from "../../../components/NoWalletConnected";
 import { Loader } from "../../../components/Loader";
+import { ApprovalsList } from "../../../components/ApprovalsList";
 
 export function WalletTransfers() {
   const account = useAccount();
@@ -169,7 +170,7 @@ export function WalletTransfers() {
         {account ? (
           <div className="flex flex-col w-full">
             <div className="flex flex-row px-5 w-full my-3 justify-between items-center">
-              <h4 className="font-black">Transfers</h4>
+              <h2 className="font-black">Transfers</h2>
               <button
                 onClick={manageModal}
                 className="float-right text-nowrap rounded-lg px-3 py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
@@ -177,6 +178,7 @@ export function WalletTransfers() {
                 Add Transfer
               </button>
             </div>
+            <ApprovalsList approvals={account && account.wallet ? account.wallet.approvals : []} />
             {uiState.loadingData ? (
               <Loader />
             ) : (

@@ -101,3 +101,5 @@ export const SAMPLEABI = `[
   ]`
 
 export const executedChainId = 42421
+
+export const numReg = new RegExp('[0-9]')

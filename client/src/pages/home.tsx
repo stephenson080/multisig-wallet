@@ -13,6 +13,8 @@ import { Link, Outlet } from "react-router-dom";
 import { NoWalletConnected } from "../components/NoWalletConnected";
 import { Empty } from "../components/Empty";
 import { Loader } from "../components/Loader";
+import { numReg } from "../utils/constants";
+import { AddApprovalInput } from "../components/AddApprovalInput";
 
 export function Home() {
   const account = useAccount();
@@ -21,10 +23,29 @@ export function Home() {
     showModal: false,
     loadingData: false,
   });
+  const [formState, setFormState] = useState<{
+    quorem: number,
+    approvals: string[],
+    name: string,
+  }>({
+    quorem: 2,
+    approvals: [],
+    name: "",
+  });
   const [walletDetails, setWalletDetails] = useState<WalletDetails[]>([]);
   useEffect(() => {
     _getWallets();
   }, [account?.address, account?.provider]);
+
+  useEffect(() => {
+    setInitialApprovals()
+  }, [account?.address])
+
+  function setInitialApprovals(){
+    if (!account)return
+    if (!account.address) return
+    setFormState({...formState, approvals: [account.address]})
+  }
 
   async function _getWallets() {
     if (!account) return;
@@ -63,19 +84,45 @@ export function Home() {
   }
 
   async function _createMultiSigWallet(
-    _approvals: string[],
-    quorem: number,
-    name: string
   ) {
     try {
       if (!account) return;
       if (!account.address) return;
       if (!account.provider) return;
+      if (+formState.quorem < 2) {
+        showToast("Invalid amount of quorom", "failed");
+        return;
+      }
+      if (!formState.approvals) {
+        showToast("Invalid Approval Value", "failed");
+        return;
+      }
+      if (!formState.name) {
+        showToast("Invalid Wallet Name", "failed");
+        return;
+      }
+      if (formState.approvals.length < 2) {
+        showToast("there should be at least 2 approval", "failed");
+        return;
+      }
+      if (formState.quorem > formState.approvals.length) {
+        showToast(
+          "number of quorem can't be greater than approvals",
+          "failed"
+        );
+        return;
+      }
+      for (let a of formState.approvals) {
+        if (!ethers.isAddress(a)) {
+          throw new Error(`${a} is not a valid Address`);
+        }
+      }
+      
       setUiState({ ...uiState, loading: true });
       await MultiSigWalletFactory.createWallet(
-        _approvals,
-        quorem,
-        name,
+        formState.approvals,
+        formState.quorem,
+        formState.name,
         account.provider,
         account.address
       );
@@ -111,53 +158,24 @@ export function Home() {
     }
   }
 
-  const formik = useFormik({
-    initialValues: {
-      name: "",
-      quorem: "",
-      approvals: "",
-    },
-    onSubmit: async (values) => {
-      try {
-        if (+values.quorem < 2) {
-          showToast("Invalid amount of quorom", "failed");
-          return;
-        }
-        if (!values.approvals) {
-          showToast("Invalid Approval Value", "failed");
-          return;
-        }
-        let approvals = values.approvals.split(",");
-        if (!account) {
-          showToast("No web3 provider detected!", "failed");
-          return;
-        }
-        const exist = approvals.find((a) => a === account.address);
-        if (!exist) {
-          approvals = [account.address!, ...approvals];
-        }
-        for (let a of approvals) {
-          if (!ethers.isAddress(a)) {
-            throw new Error(`${a} is not a valid Address`);
-          }
-        }
-        if (!approvals || approvals.length < 2) {
-          showToast("there should be at least 2 approval", "failed");
-          return;
-        }
-        if (+values.quorem > approvals.length) {
-          showToast(
-            "number of quorem can't be greater than approvals",
-            "failed"
-          );
-          return;
-        }
-        await _createMultiSigWallet(approvals, +values.quorem, values.name);
-      } catch (error: any) {
-        showToast(error.message, "failed");
-      }
-    },
-  });
+  function onApprovalChanged(id: number, value: string) {
+    const updatedApproval = [...formState.approvals];
+    updatedApproval[id] = value;
+    setFormState({ ...formState, approvals: [...updatedApproval] });
+  }
+
+  function onApprovalRemoved(id: number) {
+    const updatedApproval = [...formState.approvals];
+    updatedApproval.splice(id, 1)
+    setFormState({ ...formState, approvals: updatedApproval });
+  }
+
+  function addApproval(){
+    const updatedApproval = [...formState.approvals];
+    updatedApproval.push('')
+    setFormState({ ...formState, approvals: [...updatedApproval] });
+  }
+
   return (
     <Layout>
       <div className="flex w-full h-full bg-white">
@@ -167,40 +185,58 @@ export function Home() {
           onClose={manageModal}
         >
           <div className="flex flex-col w-full mt-6">
-            <div className="flex flex-wrap w-full mb-2">
-              <p className="text-sm text-red-400">
-                Note: The connected wallet address is added to the list of
-                approvals regardless of if you add it or not
-              </p>
+            <input
+              type="text"
+              className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 my-2"
+              placeholder="enter wallet name..."
+              required
+              onChange={(e) =>
+                setFormState({ ...formState, name: e.target.value })
+              }
+            />
+            <input
+              type="number"
+              className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 my-2"
+              placeholder="enter number of quorem"
+              required
+              onChange={(e) => {
+                if (!numReg.test(e.target.value)) return;
+                setFormState({ ...formState, quorem: +e.target.value });
+              }}
+            />
+            {formState.approvals.map((a, i) => (
+              <AddApprovalInput
+                id={i}
+                onChange={onApprovalChanged}
+                onRemove={onApprovalRemoved}
+                initialvalue={a}
+                disabled={i === 0}
+                key={i}
+              />
+            ))}
+            <div
+              onClick={addApproval}
+              className="flex flex-row items-center cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-4 mx-1 text-blue-700"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+              <p className="font-sm text-blue-700">Add Approval</p>
             </div>
 
-            <input
-              type="text"
-              name="approvals"
-              value={formik.values.approvals}
-              onChange={formik.handleChange}
-              placeholder="approvals (0xxxxxxxx, 0xxxxxxxx)"
-              className="h-full w-full mt-3 rounded-sm bg-white bg-opacity-30 px-3 py-2 text-sm text-black outline outline-1 outline-offset-2 focus:border-none focus:outline-none"
-            />
-            <input
-              type="text"
-              name="name"
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              placeholder="enter wallet name..."
-              className="h-full w-full mt-3 rounded-sm bg-white bg-opacity-30 px-3 py-2 text-sm text-black outline outline-1 outline-offset-2 focus:border-none focus:outline-none"
-            />
-            <input
-              type="text"
-              name="quorem"
-              value={formik.values.quorem}
-              onChange={formik.handleChange}
-              placeholder="enter number of quorem"
-              className="h-full w-full mt-3 rounded-sm bg-white bg-opacity-30 px-3 py-2 text-sm text-black outline outline-1 outline-offset-2 focus:border-none focus:outline-none"
-            />
-
             <button
-              onClick={() => formik.handleSubmit()}
+              onClick={_createMultiSigWallet}
               className="text-nowrap rounded-lg mt-6 w-full py-3 text-[16px]/[20px] text-white capitalize bg-blue-400"
               disabled={uiState.loading}
             >
@@ -236,9 +272,6 @@ export function Home() {
                           Name
                         </th>
                         <th scope="col" className="px-6 py-3">
-                          Approvals
-                        </th>
-                        <th scope="col" className="px-6 py-3">
                           Wallet balance
                         </th>
                         <th scope="col" className="px-6 py-3">
@@ -248,9 +281,6 @@ export function Home() {
                     </thead>
                     <tbody>
                       {walletDetails.map((w, i) => {
-                        const approvals = w.approvals.map((a) =>
-                          truncateAddress(a)
-                        );
                         return (
                           <tr
                             key={i}
@@ -262,11 +292,8 @@ export function Home() {
                             >
                               {i + 1}
                             </td>
-                            <td className="px-6 py-4">
-                              {truncateAddress(w.address)}
-                            </td>
+                            <td className="px-6 py-4">{w.address}</td>
                             <td className="px-6 py-4">{w.name}</td>
-                            <td className="px-6 py-4">{approvals.join(",")}</td>
                             <td className="px-6 py-4">{w.balance} RWA</td>
                             <td className="px-6 py-4">
                               <Link to={`/wallet/transfers/${w.address}`}>
