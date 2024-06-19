@@ -196,7 +196,7 @@ export function WalletTransfers() {
                         Amount&nbsp;($)
                       </th>
                       <th scope="col" className="px-6 py-3">
-                        Recipient
+                        To Address
                       </th>
                       <th scope="col" className="px-6 py-3">
                         Approvals
