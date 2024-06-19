@@ -1,6 +1,7 @@
 import { connectToBrowserProvider } from "../utils/script";
 import { truncateAddress } from "../utils/helpers";
 import { useAccount } from "../context/UserContext";
+import { useLocation } from "react-router-dom";
 
 const Header = () => {
   const account = useAccount();
@@ -22,10 +23,12 @@ const Header = () => {
   return (
     <div
       className={`flex py-3 items-center ${
-        account?.wallet ? "justify-between" : "justify-end"
+        account?.wallet && location.pathname !== "/"
+          ? "justify-between"
+          : "justify-end"
       } px-5 bg-blue-50`}
     >
-      {account && account.wallet && (
+      {account && account.wallet && location.pathname !== "/" && (
         <div>
           <h2>{account.wallet.name}</h2>
           <p className="text-gray-400">Bal: {account.wallet.balance} RWA</p>

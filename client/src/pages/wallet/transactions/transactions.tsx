@@ -341,7 +341,7 @@ export function WalletTransactions() {
                         ID
                       </th>
                       <th scope="col" className="px-6 py-3">
-                        Contract address
+                        To Contract address
                       </th>
                       <th scope="col" className="px-6 py-3">
                         Approvals
